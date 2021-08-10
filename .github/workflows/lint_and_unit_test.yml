@@ -58,3 +58,9 @@ jobs:
           path: |
             RxJavaTemplate/app/build/reports/jacoco/jacocoTestReport/
             RxJavaTemplate/data/build/reports/jacoco/jacocoTestReport/
+
+      - name: Run UI Tests on RxJavaTemplate
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          script: cd RxJavaTemplate; ./gradlew connectedCheck
