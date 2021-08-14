@@ -6,10 +6,6 @@ jobs:
   ui_test:
     name: Execute UI tests
     runs-on: self-hosted
-    strategy:
-      matrix:
-        api-level: [ 30 ]
-        target: [ google_apis ]
     steps:
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
@@ -28,38 +24,14 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-          upload-chunk-size: 4000000
-
-      # Set up AVD snapshot caching
-      - name: Load AVD cached
-        id: avd-cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}
-          upload-chunk-size: 4000000
-
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          force-avd-creation: false
-          working-directory: ./RxJavaTemplate
-          script: echo "Generated AVD snapshot for caching."
+          upload-chunk-size: 20000000
 
       # Run UI tests & Archive reports
       - name: Run UI tests on RxJavaTemplate
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          force-avd-creation: false
+          api-level: 30
+          target: google_apis
           working-directory: ./RxJavaTemplate
           script: ./gradlew connectedCheck
 
