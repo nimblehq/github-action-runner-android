@@ -1,7 +1,11 @@
 name: UI Test
 
 # TODO : update when to trigger this workflow as you wish
-on: push
+on:
+  # Run UI test every time we release
+  push:
+    branches:
+      - main
 jobs:
   ui_test:
     name: Execute UI tests
