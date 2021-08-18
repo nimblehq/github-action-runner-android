@@ -24,7 +24,6 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
-          upload-chunk-size: 20000000
 
       # Run Detekt and Archive Detekt reports
       - name: Run Detekt on CoroutineTemplate
