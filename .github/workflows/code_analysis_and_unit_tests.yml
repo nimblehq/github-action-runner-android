@@ -1,11 +1,24 @@
-name: Lint and Test
+name: Code analysis and unit tests
 
-# Choose the branch or branches you want to run this workflow
-on: push
+on:
+  # Trigger this workflow for all push actions
+  # except those in develop, main, or release branch,
+  # and pull request actions
+  pull_request:
+    types: [ opened, synchronize, edited, reopened ]
+  push:
+    branches-ignore:
+      - develop
+      - main
+      - 'release/**'
 jobs:
-  lint_and_test:
-    name: Static code analysis and unit test
+  code_analysis_and_unit_tests:
+    name: Static code analysis and unit tests
     runs-on: self-hosted
+    strategy:
+      matrix:
+        api-level: [ 30 ]
+        target: [ google_apis ]
     steps:
       - name: Set up JDK 1.8
         uses: actions/setup-java@v1
@@ -14,7 +27,7 @@ jobs:
 
       - uses: actions/checkout@v2.3.4
 
-      - name: Load Gradle cached
+      - name: Load cached Gradle
         uses: actions/cache@v2
         with:
           path: |
@@ -24,8 +37,10 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
+          # Currently set to default value
+          upload-chunk-size: 33554432
 
-      # Run Detekt and Archive Detekt reports
+      # Run Detekt & archive Detekt reports
       - name: Run Detekt on CoroutineTemplate
         working-directory: ./CoroutineTemplate
         run: ./gradlew detekt
@@ -40,21 +55,22 @@ jobs:
           name: detekt-report-coroutine
           path: CoroutineTemplate/build/reports/detekt/
 
-      - name: Archive Detekt report on RxJavaTemplate
+      - name: Archive Detekt reports on RxJavaTemplate
         uses: actions/upload-artifact@v2
         with:
-          name: detekt-report-rxjava
+          name: detekt-reports-rxjava
           path: RxJavaTemplate/build/reports/detekt/
 
-      # Run Unit Test & Jacoco for code coverage & Archive reports
-      - name: Run Unit Tests & Jacoco on RxJavaTemplate
+      # Run unit tests & Jacoco for code coverage & archive reports
+      - name: Run unit tests & Jacoco on RxJavaTemplate
         working-directory: ./RxJavaTemplate
         run: ./gradlew jacocoTestReport
 
-      - name: Archive Code coverage report on RxJavaTemplate
+      - name: Archive code coverage reports on RxJavaTemplate
+        if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: code-coverage-report-rxjava
+          name: code-coverage-reports-rxjava
           path: |
             RxJavaTemplate/app/build/reports/jacoco/jacocoTestReport/
             RxJavaTemplate/data/build/reports/jacoco/jacocoTestReport/
