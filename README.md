@@ -1,39 +1,25 @@
-<p align="center">
-  <img alt="Nimble logo" src="https://assets.nimblehq.co/logo/light/logo-light-text-320.png" />
-</p>
+# Android Templates: RxJava
+- Our optimized Android templates used in our android projects
 
----
+### Setup
+- Clone the project
+- Checkout our main development branch `kotlin`
+- Run the project with Android Studio
 
-A collection of templates:
+### Linter and static code analysis
 
-* **[CoroutineTemplate](https://github.com/nimblehq/android-templates/tree/kotlin/CoroutineTemplate)**
-* **[RxJavaTemplate](https://github.com/nimblehq/android-templates/tree/kotlin/RxJavaTemplate)**
-
-## Setup
-
-1. Clone or download this repository to your local machine, then extract and open the folder
-2. Run `newproject.sh` script to create a new project with the following inputs:
+1. Check Style:
 
 ```
-  -h, --help                         Display this usage message and exit
-  -t, --template [TEMPLATE]          Select template: "rx" - RxJavaTemplate or "crt" - CoroutineTemplate (i.e. rx)
-  -p, --package-name [PACKAGE_NAME]  New package name (i.e. com.example.package)
-  -n, --app-name [APP_NAME]          New app name (i.e. MyApp, "My App")
+$ ./gradlew checkStyle
 ```
 
-Example:
-- Init a new project with `RxJavaTemplate`
-  `./newproject.sh -t rx -p co.myproject.example -n "My Project"`
+Report is located at: `./app/build/reports/checkstyle/`
 
-- Init a new project with `CoroutineTemplate`
-  `./newproject.sh -t crt -p co.myproject.example -n "My Project"`
+2. Detekt
 
-3. Update `android_version_code` and `android_version_name`
-  - `RxJavaTemplate/build.gradle`
-  - `CoroutineTemplate/build.gradle`
+```
+$ ./gradlew detekt
+```
 
-## About
-
-![Nimble](https://assets.nimblehq.co/logo/dark/logo-dark-text-160.png)
-
-This project is maintained and funded by Nimble.
+Report is located at: `./build/reports/detekt.html`
