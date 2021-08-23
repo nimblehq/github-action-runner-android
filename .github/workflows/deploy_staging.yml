@@ -1,0 +1,108 @@
+name: Deploy staging
+
+on:
+  # Only trigger this workflow on push action in develop branch
+  push:
+    branches:
+      - develop
+jobs:
+  run_tests_and_deploy_staging:
+    name: Run tests and deploy staging
+    runs-on: [ self-hosted, ui-test ]
+    strategy:
+      matrix:
+        api-level: [ 30 ]
+        target: [ google_apis ]
+    steps:
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - uses: actions/checkout@v2.3.4
+
+      - name: Load cached Gradle
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches/modules-*
+            ~/.gradle/caches/jars-*
+            ~/.gradle/caches/build-cache-*
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+          # Currently set to default value
+          upload-chunk-size: 33554432
+
+      # Run Detekt & archive Detekt reports
+      - name: Run Detekt
+        run: ./gradlew detekt
+
+      - name: Archive Detekt reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: detekt-reports
+          path: build/reports/detekt/
+
+      # Run unit tests & Jacoco for code coverage & archive reports
+      - name: Run unit tests & Jacoco
+        run: ./gradlew jacocoTestReport
+
+      - name: Archive code coverage reports
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: code-coverage-reports
+          path: |
+            app/build/reports/jacoco/jacocoTestReport/
+            data/build/reports/jacoco/jacocoTestReport/
+
+      # Set up AVD snapshot caching
+      - name: Load cached AVD
+        id: avd-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+          # Currently set to default value
+          upload-chunk-size: 33554432
+
+      - name: Create AVD & generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          force-avd-creation: false
+          script: echo "Generated AVD snapshot for caching."
+
+      # Run UI tests & archive reports
+      - name: Run UI tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          force-avd-creation: false
+          script: ./gradlew connectedCheck
+
+      - name: Archive UI test reports
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ui-test-reports
+          path: app/build/reports/androidTests/connected/
+
+      # Build staging debug artifact
+      - name: Build artifact
+        run: ./gradlew assembleStagingDebug
+
+      # Upload artifact to GitHub
+      - name: Upload to GitHub
+        uses: actions/upload-artifact@v2
+        with:
+          name: staging-debug-artifact
+          path: app/build/outputs/apk/staging/debug/app-staging-debug.apk
