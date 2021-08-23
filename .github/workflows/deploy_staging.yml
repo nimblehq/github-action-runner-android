@@ -8,7 +8,7 @@ on:
 jobs:
   run_tests_and_deploy_staging:
     name: Run tests and deploy staging
-    runs-on: self-hosted
+    runs-on: [ self-hosted, ui-test ]
     strategy:
       matrix:
         api-level: [ 30 ]
