@@ -4,7 +4,7 @@ on:
   # Only trigger this workflow on push action in develop branch
   push:
     branches:
-      - develop
+      - poc/not-separate
 jobs:
   run_tests_and_deploy_staging:
     name: Run tests and deploy staging
