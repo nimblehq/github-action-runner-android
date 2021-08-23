@@ -36,39 +36,27 @@ jobs:
           upload-chunk-size: 33554432
 
       # Run Detekt & archive Detekt reports
-      - name: Run Detekt on CoroutineTemplate
-        working-directory: ./CoroutineTemplate
+      - name: Run Detekt
         run: ./gradlew detekt
 
-      - name: Run Detekt on RxJavaTemplate
-        working-directory: ./RxJavaTemplate
-        run: ./gradlew detekt
-
-      - name: Archive Detekt report on CoroutineTemplate
+      - name: Archive Detekt reports
         uses: actions/upload-artifact@v2
         with:
-          name: detekt-report-coroutine
-          path: CoroutineTemplate/build/reports/detekt/
-
-      - name: Archive Detekt reports on RxJavaTemplate
-        uses: actions/upload-artifact@v2
-        with:
-          name: detekt-reports-rxjava
-          path: RxJavaTemplate/build/reports/detekt/
+          name: detekt-reports
+          path: build/reports/detekt/
 
       # Run unit tests & Jacoco for code coverage & archive reports
-      - name: Run unit tests & Jacoco on RxJavaTemplate
-        working-directory: ./RxJavaTemplate
+      - name: Run unit tests & Jacoco
         run: ./gradlew jacocoTestReport
 
-      - name: Archive code coverage reports on RxJavaTemplate
+      - name: Archive code coverage reports
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: code-coverage-reports-rxjava
+          name: code-coverage-reports
           path: |
-            RxJavaTemplate/app/build/reports/jacoco/jacocoTestReport/
-            RxJavaTemplate/data/build/reports/jacoco/jacocoTestReport/
+            app/build/reports/jacoco/jacocoTestReport/
+            data/build/reports/jacoco/jacocoTestReport/
 
       # Set up AVD snapshot caching
       - name: Load cached AVD
@@ -90,41 +78,32 @@ jobs:
           target: ${{ matrix.target }}
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           force-avd-creation: false
-          working-directory: ./RxJavaTemplate
           script: echo "Generated AVD snapshot for caching."
 
       # Run UI tests & archive reports
-      - name: Run UI tests on RxJavaTemplate
+      - name: Run UI tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           force-avd-creation: false
-          working-directory: ./RxJavaTemplate
           script: ./gradlew connectedCheck
 
-      - name: Archive UI test reports on RxJavaTemplate
+      - name: Archive UI test reports
         if: always()
         uses: actions/upload-artifact@v2
         with:
-          name: ui-test-reports-rxjava
-          path: RxJavaTemplate/app/build/reports/androidTests/connected/
+          name: ui-test-reports
+          path: app/build/reports/androidTests/connected/
 
-      # Build production debug artifacts
-      - name: Build CoroutineTemplate artifact
-        working-directory: ./CoroutineTemplate
+      # Build production debug artifact
+      - name: Build artifact
         run: ./gradlew assembleProductionDebug
 
-      - name: Build RxJavaTemplate artifact
-        working-directory: ./RxJavaTemplate
-        run: ./gradlew assembleProductionDebug
-
-      # Upload artifacts to GitHub
+      # Upload artifact to GitHub
       - name: Upload to GitHub
         uses: actions/upload-artifact@v2
         with:
-          name: production-debug-artifacts
-          path: |
-            RxJavaTemplate/app/build/outputs/apk/production/debug/app-production-debug.apk
-            CoroutineTemplate/app/build/outputs/apk/production/debug/app-production-debug.apk
+          name: production-debug-artifact
+          path: app/build/outputs/apk/production/debug/app-production-debug.apk
