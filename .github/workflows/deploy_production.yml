@@ -9,7 +9,7 @@ on:
 jobs:
   run_tests_and_deploy_production:
     name: Run tests and deploy production
-    runs-on: self-hosted
+    runs-on: [ self-hosted, ui-test ]
     strategy:
       matrix:
         api-level: [ 30 ]
