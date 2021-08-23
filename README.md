@@ -31,7 +31,7 @@ The repository for proof of concept of [Custom Runner for Github Actions (Androi
 
 ### Giving the ability to run on a self-hosted runner to workflows
 
-Define the following key to all the jobs that we target to run on a self-hosted runner.
+Define the following key to all the jobs that we target to run on a self-hosted runner:
 
 ```
 runs-on: self-hosted
